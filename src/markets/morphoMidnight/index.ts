@@ -165,6 +165,31 @@ export const MORPHO_MIDNIGHT_CBBTC_USDC_860_20261225 = (networkId = NetworkNumbe
   curator: 'Morpho',
 });
 
+export const MORPHO_MIDNIGHT_CBBTC_USDC_860_20270129 = (networkId = NetworkNumber.Base): MorphoMidnightMarketData => ({
+  // This public term is also listed by Tenor, but has no Tenor curator vault and
+  // therefore uses the same Morpho market ID as the generic market entry.
+  chainIds: [NetworkNumber.Base],
+  label: 'Morpho Midnight cbBTC/USDC',
+  shortLabel: 'cbBTC/USDC',
+  url: 'cbbtc-usdc-20270129',
+  value: MorphoMidnightVersions.MorphoMidnightCbBTCUSDC_860_20270129_Base,
+  midnight: MIDNIGHT_BASE,
+  loanToken: USDC_BASE,
+  collaterals: [{
+    token: CBBTC_BASE,
+    lltv: 0.86,
+    liquidationCursor: '300000000000000000',
+    oracle: '0x663BECd10daE6C4A3Dcd89F1d76c1174199639B9',
+  }],
+  maturity: 1801234800, // 2027-01-29T15:00:00Z
+  rcfThreshold: '3000000000',
+  enterGate: ZERO_ADDRESS,
+  liquidatorGate: ZERO_ADDRESS,
+  marketId: '0xfbbdc1b3e507fc738bca29973750ecb3f2357159191fa4d01f59cea1a895dcfd',
+  protocolName: 'morpho-midnight',
+  curator: 'Morpho',
+});
+
 // ── Tenor-curated ────────────────────────────────────────────────────────────────────────────────
 
 // Tenor Midnight markets are the same structs as Morpho's (`MorphoMidnightMarketData`), on the same core
@@ -621,6 +646,138 @@ export const MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261217 = (networkId = Networ
   curator: 'Tenor',
 });
 
+// Tenor rolls the WETH/USDC and cbETH/WETH ladders monthly. These terms supersede the
+// older Aug–Dec ladder in Tenor's UI, but remain distinct on-chain markets and order books.
+const createTenorWethUsdcRollingMarket = (
+  value: MorphoMidnightVersions,
+  url: string,
+  maturity: number,
+  marketId: string,
+): MorphoMidnightMarketData => ({
+  chainIds: [NetworkNumber.Base],
+  label: 'Tenor WETH/USDC',
+  shortLabel: 'Tenor WETH/USDC',
+  url,
+  value,
+  midnight: MIDNIGHT_BASE,
+  loanToken: USDC_BASE,
+  collaterals: [{
+    token: WETH_BASE,
+    lltv: 0.86,
+    liquidationCursor: '300000000000000000',
+    oracle: '0xFEa2D58cEfCb9fcb597723c6bAE66fFE4193aFE4',
+  }],
+  hiddenCollaterals: [{
+    token: TENOR_WETH_USDC_VAULT_BASE,
+    lltv: 0.98,
+    liquidationCursor: '300000000000000000',
+    oracle: '0x784519B1b59A1e1498f077066bB9336672bcc3EE',
+  }],
+  maturity,
+  rcfThreshold: '3000000000',
+  enterGate: ZERO_ADDRESS,
+  liquidatorGate: ZERO_ADDRESS,
+  marketId,
+  protocolName: 'morpho-midnight',
+  curator: 'Tenor',
+});
+
+const createTenorCbEthWethRollingMarket = (
+  value: MorphoMidnightVersions,
+  url: string,
+  maturity: number,
+  marketId: string,
+): MorphoMidnightMarketData => ({
+  chainIds: [NetworkNumber.Base],
+  label: 'Tenor cbETH/WETH',
+  shortLabel: 'Tenor cbETH/WETH',
+  url,
+  value,
+  midnight: MIDNIGHT_BASE,
+  loanToken: WETH_BASE,
+  collaterals: [{
+    token: CBETH_BASE,
+    lltv: 0.945,
+    liquidationCursor: '300000000000000000',
+    oracle: '0xB03855Ad5AFD6B8db8091DD5551CAC4ed621d9E6',
+  }],
+  hiddenCollaterals: [{
+    token: TENOR_CBETH_WETH_VAULT_BASE,
+    lltv: 0.98,
+    liquidationCursor: '300000000000000000',
+    oracle: '0xa02f629871be35d6db0F88C944cF955554Ec87c0',
+  }],
+  maturity,
+  rcfThreshold: '4000000000000000000',
+  enterGate: ZERO_ADDRESS,
+  liquidatorGate: ZERO_ADDRESS,
+  marketId,
+  protocolName: 'morpho-midnight',
+  curator: 'Tenor',
+});
+
+export const MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20260925 = () => createTenorWethUsdcRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20260925_Base,
+  'tenor-weth-usdc-20260925',
+  1790348400,
+  '0x436fa08b0c46b961d3021117919919d9224157f6a9efd8e371c04008feeb0597',
+);
+export const MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20261030 = () => createTenorWethUsdcRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261030_Base,
+  'tenor-weth-usdc-20261030',
+  1793372400,
+  '0x379ae30c5fcb8988c4aac92ddabb13e15c247dd0104157257e6ecf686b7a69dd',
+);
+export const MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20261127 = () => createTenorWethUsdcRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261127_Base,
+  'tenor-weth-usdc-20261127',
+  1795791600,
+  '0xb0513c347a3535d22afcbe697feb5790ab4254b4f885a6e9e77926682c6cc3f5',
+);
+export const MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20261225 = () => createTenorWethUsdcRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261225_Base,
+  'tenor-weth-usdc-20261225',
+  1798210800,
+  '0xdc209b64f909313bd3f54133ac5716a0a3ea03f7faa6332f75d906de16bd2893',
+);
+export const MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20270129 = () => createTenorWethUsdcRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20270129_Base,
+  'tenor-weth-usdc-20270129',
+  1801234800,
+  '0x5f21188cf50dcd269250911a64824736d09770d56796cae432a529a679351475',
+);
+
+export const MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20260925 = () => createTenorCbEthWethRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20260925_Base,
+  'tenor-cbeth-weth-20260925',
+  1790348400,
+  '0x65db922379427ec777fc55650b8f6cc31ab3a3f2f86a9798fc898c81cf936e17',
+);
+export const MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261030 = () => createTenorCbEthWethRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261030_Base,
+  'tenor-cbeth-weth-20261030',
+  1793372400,
+  '0xcdea4ca06837feca3026b23a95f0bd96c3eabdc77d1211472ce0346fcc200649',
+);
+export const MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261127 = () => createTenorCbEthWethRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261127_Base,
+  'tenor-cbeth-weth-20261127',
+  1795791600,
+  '0xbb9ee13ffe52f4d52311775b1bd4fa309e402fd01ddfa165023c42dd6e5c051d',
+);
+export const MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261225 = () => createTenorCbEthWethRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261225_Base,
+  'tenor-cbeth-weth-20261225',
+  1798210800,
+  '0x80530386795c88ba8c1ea6d686ae6168525c819ce4e0ea6017cb59afe34fb6d2',
+);
+export const MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20270129 = () => createTenorCbEthWethRollingMarket(
+  MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20270129_Base,
+  'tenor-cbeth-weth-20270129',
+  1801234800,
+  '0x3cfda244eeec7e5cda2a07ef23e2a5e3fe6ba17882417cafbf3f3c432377ff1d',
+);
+
 export const MorphoMidnightMarkets = (networkId: NetworkNumber) => ({
   // BASE — Morpho-curated
   [MorphoMidnightVersions.MorphoMidnightCbBTCUSDC_860_20260731_Base]: MORPHO_MIDNIGHT_CBBTC_USDC_860_20260731(networkId),
@@ -629,6 +786,7 @@ export const MorphoMidnightMarkets = (networkId: NetworkNumber) => ({
   [MorphoMidnightVersions.MorphoMidnightCbBTCUSDC_860_20261030_Base]: MORPHO_MIDNIGHT_CBBTC_USDC_860_20261030(networkId),
   [MorphoMidnightVersions.MorphoMidnightCbBTCUSDC_860_20261127_Base]: MORPHO_MIDNIGHT_CBBTC_USDC_860_20261127(networkId),
   [MorphoMidnightVersions.MorphoMidnightCbBTCUSDC_860_20261225_Base]: MORPHO_MIDNIGHT_CBBTC_USDC_860_20261225(networkId),
+  [MorphoMidnightVersions.MorphoMidnightCbBTCUSDC_860_20270129_Base]: MORPHO_MIDNIGHT_CBBTC_USDC_860_20270129(networkId),
   // BASE — Tenor-curated
   [MorphoMidnightVersions.MorphoMidnightTenorCbBTCUSDC_20260827_Base]: MORPHO_MIDNIGHT_TENOR_CBBTC_USDC_860_20260827(networkId),
   [MorphoMidnightVersions.MorphoMidnightTenorCbBTCUSDC_20260924_Base]: MORPHO_MIDNIGHT_TENOR_CBBTC_USDC_860_20260924(networkId),
@@ -640,11 +798,21 @@ export const MorphoMidnightMarkets = (networkId: NetworkNumber) => ({
   [MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261022_Base]: MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20261022(networkId),
   [MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261119_Base]: MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20261119(networkId),
   [MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261217_Base]: MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20261217(networkId),
+  [MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20260925_Base]: MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20260925(),
+  [MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261030_Base]: MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20261030(),
+  [MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261127_Base]: MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20261127(),
+  [MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261225_Base]: MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20261225(),
+  [MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20270129_Base]: MORPHO_MIDNIGHT_TENOR_WETH_USDC_860_20270129(),
   [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20260827_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20260827(networkId),
   [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20260924_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20260924(networkId),
   [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261022_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261022(networkId),
   [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261119_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261119(networkId),
   [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261217_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261217(networkId),
+  [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20260925_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20260925(),
+  [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261030_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261030(),
+  [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261127_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261127(),
+  [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261225_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20261225(),
+  [MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20270129_Base]: MORPHO_MIDNIGHT_TENOR_CBETH_WETH_945_20270129(),
 }) as const;
 
 // Which markets Tenor's router quotes, by id, for the quote helpers that only receive one.

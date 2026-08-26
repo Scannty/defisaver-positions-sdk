@@ -224,7 +224,7 @@ describe('Tenor Midnight markets', () => {
   });
 
   it('cover the three Tenor pairs from morphoFixedMarkets', () => {
-    assert.strictEqual(Object.keys(tenorMarkets).length, 15);
+    assert.strictEqual(Object.keys(tenorMarkets).length, 25);
     assert.strictEqual(
       tenorMarkets[MorphoMidnightVersions.MorphoMidnightTenorCbBTCUSDC_20260827_Base].marketId,
       '0x44495af1cca7842191a65a73978e01ed72238731e193c3b11460083efd60a318',
@@ -239,6 +239,14 @@ describe('Tenor Midnight markets', () => {
     );
     assert.isTrue(isTenorMidnightMarket(tenorMarkets[MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20261217_Base]));
     assert.isTrue(isTenorMidnightMarket(tenorMarkets[MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20261217_Base]));
+    assert.strictEqual(
+      tenorMarkets[MorphoMidnightVersions.MorphoMidnightTenorWETHUSDC_20270129_Base].marketId,
+      '0x5f21188cf50dcd269250911a64824736d09770d56796cae432a529a679351475',
+    );
+    assert.strictEqual(
+      tenorMarkets[MorphoMidnightVersions.MorphoMidnightTenorCbETHWETH_20270129_Base].marketId,
+      '0x3cfda244eeec7e5cda2a07ef23e2a5e3fe6ba17882417cafbf3f3c432377ff1d',
+    );
   });
 
   it('use the same MorphoMidnightMarketData shape as Morpho-curated markets', () => {

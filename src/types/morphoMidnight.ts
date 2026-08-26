@@ -12,6 +12,7 @@ export enum MorphoMidnightVersions {
   MorphoMidnightCbBTCUSDC_860_20261030_Base = 'morphomidnightcbbtcusdc_860_20261030_base',
   MorphoMidnightCbBTCUSDC_860_20261127_Base = 'morphomidnightcbbtcusdc_860_20261127_base',
   MorphoMidnightCbBTCUSDC_860_20261225_Base = 'morphomidnightcbbtcusdc_860_20261225_base',
+  MorphoMidnightCbBTCUSDC_860_20270129_Base = 'morphomidnightcbbtcusdc_860_20270129_base',
   // Tenor-hosted Midnight markets (same core, different order book)
   MorphoMidnightTenorCbBTCUSDC_20260827_Base = 'morphomidnighttenorcbbtcusdc_20260827_base',
   MorphoMidnightTenorCbBTCUSDC_20260924_Base = 'morphomidnighttenorcbbtcusdc_20260924_base',
@@ -23,11 +24,21 @@ export enum MorphoMidnightVersions {
   MorphoMidnightTenorWETHUSDC_20261022_Base = 'morphomidnighttenorwethusdc_20261022_base',
   MorphoMidnightTenorWETHUSDC_20261119_Base = 'morphomidnighttenorwethusdc_20261119_base',
   MorphoMidnightTenorWETHUSDC_20261217_Base = 'morphomidnighttenorwethusdc_20261217_base',
+  MorphoMidnightTenorWETHUSDC_20260925_Base = 'morphomidnighttenorwethusdc_20260925_base',
+  MorphoMidnightTenorWETHUSDC_20261030_Base = 'morphomidnighttenorwethusdc_20261030_base',
+  MorphoMidnightTenorWETHUSDC_20261127_Base = 'morphomidnighttenorwethusdc_20261127_base',
+  MorphoMidnightTenorWETHUSDC_20261225_Base = 'morphomidnighttenorwethusdc_20261225_base',
+  MorphoMidnightTenorWETHUSDC_20270129_Base = 'morphomidnighttenorwethusdc_20270129_base',
   MorphoMidnightTenorCbETHWETH_20260827_Base = 'morphomidnighttenorcbethweth_20260827_base',
   MorphoMidnightTenorCbETHWETH_20260924_Base = 'morphomidnighttenorcbethweth_20260924_base',
   MorphoMidnightTenorCbETHWETH_20261022_Base = 'morphomidnighttenorcbethweth_20261022_base',
   MorphoMidnightTenorCbETHWETH_20261119_Base = 'morphomidnighttenorcbethweth_20261119_base',
   MorphoMidnightTenorCbETHWETH_20261217_Base = 'morphomidnighttenorcbethweth_20261217_base',
+  MorphoMidnightTenorCbETHWETH_20260925_Base = 'morphomidnighttenorcbethweth_20260925_base',
+  MorphoMidnightTenorCbETHWETH_20261030_Base = 'morphomidnighttenorcbethweth_20261030_base',
+  MorphoMidnightTenorCbETHWETH_20261127_Base = 'morphomidnighttenorcbethweth_20261127_base',
+  MorphoMidnightTenorCbETHWETH_20261225_Base = 'morphomidnighttenorcbethweth_20261225_base',
+  MorphoMidnightTenorCbETHWETH_20270129_Base = 'morphomidnighttenorcbethweth_20270129_base',
 }
 
 export type MorphoMidnightCurator = 'Morpho' | 'Tenor';
