@@ -46,8 +46,9 @@ export const _getLiquityV2MarketData = async (provider: Client, network: Network
   const {
     marketAddress, debtToken, collateralToken, isLegacy,
   } = selectedMarket;
-  const viewContract = getLiquityV2ViewContract(provider, network, isLegacy);
-  const data = await viewContract.read.getMarketData([marketAddress]);
+  const data = isLegacy
+    ? await LiquityV2LegacyViewContractViem(provider, network).read.getMarketData([marketAddress])
+    : (await LiquityV2ViewContractViem(provider, network).simulate.getMarketData([marketAddress])).result;
   const hintHelperAddress = data.hintHelpers;
   const troveNFTAddress = data.troveNFT;
   const borrowerOperationsAddress = data.borrowerOperations;
@@ -381,11 +382,15 @@ export const _getLiquityV2TroveData = async (
   },
   fetchDebtInFront: boolean = true,
 ): Promise<LiquityV2TroveData> => {
-  const viewContract = getLiquityV2ViewContract(provider, network, selectedMarket.isLegacy);
   const { minCollRatio, batchCollRatio } = allMarketsData[selectedMarket.value].marketData;
   const { collateralToken, marketAddress, debtToken } = selectedMarket;
+  const troveInfoPromise = selectedMarket.isLegacy
+    ? LiquityV2LegacyViewContractViem(provider, network).read.getTroveInfo([marketAddress, BigInt(troveId)])
+    : LiquityV2ViewContractViem(provider, network).simulate
+      .getTroveInfo([marketAddress, BigInt(troveId)])
+      .then(({ result }) => result);
   const [_data, debtInFront] = await Promise.all([
-    viewContract.read.getTroveInfo([marketAddress, BigInt(troveId)]),
+    troveInfoPromise,
     fetchDebtInFront ? getDebtInFrontLiquityV2(allMarketsData, selectedMarket.value, provider, network, selectedMarket.isLegacy, troveId) : Promise.resolve('0'),
   ]);
   const data = {
