@@ -123,6 +123,17 @@ export interface PositionBalances {
   deposited?: Balances,
 }
 
+/**
+ * A single point of a position's balance-history chart: the USD value of a position at one block.
+ * Shared across protocols so the chart consumer doesn't need a per-protocol shape.
+ */
+export interface HistoricalBalance {
+  block: number,
+  suppliedUsd: string,
+  borrowedUsd: string,
+  netUsd: string,
+}
+
 export type EthereumProvider = { request(...args: any): Promise<any> }; // TODO
 
 export type HexString = `0x${string}`;

@@ -31,6 +31,7 @@ import {
   EModeCategoriesData,
   EModeCategoryData,
   EModeCategoryDataMapping,
+  HistoricalBalance,
 } from '../types';
 import {
   Blockish,
@@ -462,12 +463,8 @@ export interface AaveV3ReserveTokenAddresses {
   };
 }
 
-export interface AaveV3HistoricalBalance {
-  block: number,
-  suppliedUsd: string,
-  borrowedUsd: string,
-  netUsd: string,
-}
+/** @deprecated Use `HistoricalBalance` from `../types`; kept as an alias so consumers don't break. */
+export type AaveV3HistoricalBalance = HistoricalBalance;
 
 /**
  * Fetches the aToken / stable-debt / variable-debt token addresses for every asset in the market.
@@ -595,9 +592,14 @@ export const _getAaveV3HistoricalBalance = async (
 
   let suppliedUsd = new Dec(0);
   let borrowedUsd = new Dec(0);
+  // Every asset here holds a real balance, so it was listed at `block` and must be priceable.
+  // Skipping an unpriced one would drop it from the totals and report the shortfall as a genuine
+  // number — a believable dip in the chart rather than the gap it actually is.
+  const unpriced = activeAssets.filter((a, i) => priceResults[i]?.status !== 'success');
+  if (unpriced.length) throw new Error(`AaveV3 historical balance: no price for ${unpriced.map((a) => a.symbol).join(', ')} at block ${block}`);
+
   activeAssets.forEach((a, i) => {
     const priceRes = priceResults[i];
-    if (priceRes?.status !== 'success') return;
     const priceUsd = new Dec((priceRes.result as bigint).toString()).div(1e8); // Aave v3 base currency is USD with 8 decimals
     if (a.supplied !== '0') suppliedUsd = suppliedUsd.add(new Dec(assetAmountInEth(a.supplied, a.symbol)).mul(priceUsd));
     if (a.debt !== '0') borrowedUsd = borrowedUsd.add(new Dec(assetAmountInEth(a.debt, a.symbol)).mul(priceUsd));

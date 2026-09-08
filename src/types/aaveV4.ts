@@ -1,5 +1,5 @@
 import {
-  EthAddress, IncentiveData, LeverageType, NetworkNumber,
+  EthAddress, HistoricalBalance, IncentiveData, LeverageType, NetworkNumber,
 } from './common';
 
 export enum AaveV4HubsType {
@@ -204,4 +204,30 @@ export interface AaveV4AccountData extends AaveV4AggregatedPositionData {
   usedAssets: AaveV4UsedReserveAssets,
   healthFactor: string,
   riskPremiumBps: number,
+}
+
+/**
+ * Per-spoke data needed to price a historical position, all of it immutable:
+ * the oracle is an immutable on the Spoke, and reserves are append-only by id, so this is read
+ * once at head and reused for every history point.
+ */
+export interface AaveV4HistoricalBalanceContext {
+  spokeAddress: EthAddress,
+  oracle: EthAddress,
+  oracleDecimals: number,
+  reserves: {
+    reserveId: number,
+    underlying: EthAddress,
+    /** Underlying token decimals as reported by the Spoke (independent of `@defisaver/tokens`). */
+    decimals: number,
+  }[],
+}
+
+export interface AaveV4HistoricalBalance extends HistoricalBalance {
+  spoke: EthAddress,
+  /** Only the supply the user has enabled as collateral. Free from the same multicall. */
+  suppliedCollateralUsd: string,
+  /** Informational split of `borrowedUsd`; do not sum these, use `borrowedUsd`. */
+  drawnUsd: string,
+  premiumUsd: string,
 }
