@@ -281,4 +281,113 @@ describe('Aave v3', () => {
 
     await fetchAccountBalances(network, providerPlasma, 1880800);
   });
+
+  // Historical balances. Every fixture is pinned to a fixed block, so both the amounts and the
+  // prices behind them are immutable — these assertions are reproducible, not time-dependent.
+  // They need an archive RPC.
+  describe('historical balance', () => {
+    // Same address and block as 'can fetch past account balances for Ethereum' above, so this
+    // reuses a fixture the suite already depends on having a position at that block.
+    const HISTORY_USER = '0x9cCf93089cb14F94BAeB8822F8CeFfd91Bd71649' as sdk.EthAddress;
+    const HISTORY_BLOCK = 18184392;
+    // Aave v3 went live on Ethereum in Jan 2023 (~block 16.5M); nothing existed here.
+    const PRE_MARKET_BLOCK = 15000000;
+
+    const ethMarket = () => sdk.markets.AaveMarkets(NetworkNumber.Eth)[sdk.AaveVersions.AaveV3] as sdk.AaveMarketInfo;
+
+    // Both paths read the same reserves and price them off the same oracle, so they should agree to
+    // well within rounding. Compare on value rather than on the decimal string, so an unrelated
+    // precision change doesn't fail this — a real mismatch is still far outside this tolerance.
+    const assertUsdMatches = (actual: string, expected: string, label: string) => {
+      assert.closeTo(Number(actual), Number(expected), Math.abs(Number(expected)) * 1e-9, label);
+    };
+
+    it('matches getAaveV3AccountData at a historical block', async function () {
+      this.timeout(60000);
+      const network = NetworkNumber.Eth;
+      const market = ethMarket();
+
+      const historical = await sdk.aaveV3.getAaveV3HistoricalBalance(provider, network, market, HISTORY_USER, HISTORY_BLOCK);
+
+      const marketData = await sdk.aaveV3.getAaveV3MarketData(provider, network, market, HISTORY_BLOCK);
+      const accountData = await sdk.aaveV3.getAaveV3AccountData(provider, network, HISTORY_USER, {
+        selectedMarket: market,
+        assetsData: marketData.assetsData,
+        eModeCategoriesData: marketData.eModeCategoriesData,
+      }, HISTORY_BLOCK);
+
+      // Guard against the comparison going vacuous if the fixture ever loses its position.
+      assert.isAbove(Number(historical.suppliedUsd), 0, 'fixture has no supply at this block');
+      assert.isAbove(Number(historical.borrowedUsd), 0, 'fixture has no debt at this block');
+
+      // A divergence here most likely means the position holds an asset that is in the market's
+      // on-chain reserve list but not in `market.assets`, which the historical path iterates.
+      assertUsdMatches(historical.suppliedUsd, accountData.suppliedUsd, 'suppliedUsd');
+      // Covers the stable + variable debt summation, which has no equivalent in the v4 path.
+      assertUsdMatches(historical.borrowedUsd, accountData.borrowedUsd, 'borrowedUsd');
+      assert.equal(historical.block, HISTORY_BLOCK);
+      assert.closeTo(Number(historical.netUsd), Number(historical.suppliedUsd) - Number(historical.borrowedUsd), 1e-6);
+    });
+
+    it('resolves aToken and debt token addresses for the market', async function () {
+      this.timeout(60000);
+      const network = NetworkNumber.Eth;
+
+      const reserveTokens = await sdk.aaveV3.getAaveV3ReserveTokenAddresses(provider, network, ethMarket());
+      const entries = Object.values(reserveTokens);
+      assert.isNotEmpty(entries);
+
+      entries.forEach((entry) => {
+        // A dropped read leaves the symbol out entirely rather than yielding a zero address, so
+        // assert on shape here and on completeness below.
+        assert.match(entry.aTokenAddress, /^0x[0-9a-fA-F]{40}$/, `${entry.symbol} aToken`);
+        assert.match(entry.variableDebtTokenAddress, /^0x[0-9a-fA-F]{40}$/, `${entry.symbol} variableDebtToken`);
+        assert.notEqual(entry.aTokenAddress.toLowerCase(), entry.underlyingAddress.toLowerCase(), `${entry.symbol} aToken should differ from underlying`);
+        assert.notEqual(entry.aTokenAddress.toLowerCase(), entry.variableDebtTokenAddress.toLowerCase(), `${entry.symbol} aToken should differ from debt token`);
+      });
+
+      // The historical path only sees assets present in this mapping, so a silently dropped
+      // reserve would under-report every point built from it. Name the missing symbols so a config
+      // drift (asset listed in config but not on-chain) is distinguishable from a read failure.
+      const missing = ethMarket().assets.filter((symbol) => !reserveTokens[symbol]);
+      assert.isEmpty(missing, `unresolved reserves: ${missing.join(', ')}`);
+    });
+
+    it('returns zeros for an address with no position', async function () {
+      this.timeout(60000);
+      const network = NetworkNumber.Eth;
+
+      const historical = await sdk.aaveV3.getAaveV3HistoricalBalance(provider, network, ethMarket(), '0x000000000000000000000000000000000000dEaD' as sdk.EthAddress, HISTORY_BLOCK);
+      assert.equal(historical.suppliedUsd, '0');
+      assert.equal(historical.borrowedUsd, '0');
+      assert.equal(historical.netUsd, '0');
+      assert.equal(historical.block, HISTORY_BLOCK);
+    });
+
+    it('produces the same result with and without prefetched reserve tokens', async function () {
+      this.timeout(60000);
+      const network = NetworkNumber.Eth;
+      const market = ethMarket();
+
+      const reserveTokens = await sdk.aaveV3.getAaveV3ReserveTokenAddresses(provider, network, market);
+
+      const withTokens = await sdk.aaveV3.getAaveV3HistoricalBalance(provider, network, market, HISTORY_USER, HISTORY_BLOCK, reserveTokens);
+      const withoutTokens = await sdk.aaveV3.getAaveV3HistoricalBalance(provider, network, market, HISTORY_USER, HISTORY_BLOCK);
+      assert.deepEqual(withTokens, withoutTokens);
+    });
+
+    it('throws rather than reporting $0 for a block before the market existed', async function () {
+      this.timeout(60000);
+      const network = NetworkNumber.Eth;
+
+      // The caller renders a gap in the chart from the throw; a $0 point here would instead draw a
+      // believable crash to zero for every position that predates the market.
+      let threw = false;
+      let result;
+      try {
+        result = await sdk.aaveV3.getAaveV3HistoricalBalance(provider, network, ethMarket(), HISTORY_USER, PRE_MARKET_BLOCK);
+      } catch (e) { threw = true; }
+      assert.isTrue(threw, `expected a throw, got ${JSON.stringify(result)}`);
+    });
+  });
 });
