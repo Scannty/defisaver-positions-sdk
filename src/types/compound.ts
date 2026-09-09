@@ -1,5 +1,6 @@
 import {
   EthAddress,
+  HistoricalBalance,
   LeverageType,
   MMAssetData,
   MMPositionData,
@@ -145,4 +146,45 @@ export interface CompoundV2PositionData extends CompoundPositionData {
 
 export interface CompoundV3PositionData extends CompoundPositionData {
   usedAssets: CompoundV3UsedAssets,
+}
+
+/**
+ * One asset of a historical point. `supplied` and `borrowed` are raw underlying amounts (wei), the
+ * same unit `getCompoundV3AccountBalances` returns, so a point can be checked against the View at
+ * the same block. `symbol` is best-effort and never used for math.
+ */
+export interface CompoundHistoricalBalanceAsset {
+  symbol: string,
+  address: EthAddress,
+  supplied: string,
+  suppliedUsd: string,
+  borrowed: string,
+  borrowedUsd: string,
+  isCollateral: boolean,
+}
+
+/**
+ * Per-market data needed to price a historical Compound v3 position. Only genuinely immutable
+ * values live here — the collateral list and price feeds are read per point, because governance
+ * rotates both and a chart spanning such a change must stay correct.
+ */
+export interface CompoundV3HistoricalBalanceContext {
+  marketAddress: EthAddress,
+  baseToken: EthAddress,
+  baseSymbol: string,
+  /** Base token decimals as reported by the Comet, independent of `@defisaver/tokens`. */
+  baseDecimals: number,
+  /** Decimals of every price feed in the market; the Comet's constructor enforces one value. */
+  priceFeedDecimals: number,
+  /** Collateral count at head, the upper bound for the per-point probe. */
+  numAssets: number,
+}
+
+export interface CompoundV3HistoricalBalance extends HistoricalBalance {
+  market: EthAddress,
+  /** Only the collateral; excludes a base-asset deposit, which Compound v3 cannot borrow against. */
+  suppliedCollateralUsd: string,
+  /** USD price of the market's base asset at the block, the scalar that converts the whole point. */
+  baseAssetUsdPrice: string,
+  assets: CompoundHistoricalBalanceAsset[],
 }
