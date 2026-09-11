@@ -408,8 +408,8 @@ export const _getCompoundV3HistoricalBalance = async (
 
   // Round two prices what round one found. `collateralBalanceOf` is a plain mapping read, so it is
   // safe to call for every collateral configured at the block, held or not.
-  const ethFeedAddress = quote === 'usd' ? '' : getConfigContractAddress('ETHPriceFeed', network);
-  const wstEthFeedAddress = quote === 'wstETH' ? getConfigContractAddress('WstETHPriceFeed', network) : '';
+  const ethFeedAddress = quote === 'usd' ? '' : getConfigContractAddress('ETHPriceFeed', network, block);
+  const wstEthFeedAddress = quote === 'wstETH' ? getConfigContractAddress('WstETHPriceFeed', network, block) : '';
   if (quote !== 'usd' && !ethFeedAddress) throw new Error(`CompoundV3 historical balance: no ETH price feed configured on network ${network}`);
   if (quote === 'wstETH' && !wstEthFeedAddress) throw new Error(`CompoundV3 historical balance: no wstETH price feed configured on network ${network}`);
 

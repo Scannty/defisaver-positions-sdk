@@ -1,5 +1,5 @@
 import {
-  EthAddress, IncentiveData, LeverageType, MMUsedAssets, NetworkNumber,
+  EthAddress, HistoricalBalance, IncentiveData, LeverageType, MMUsedAssets, NetworkNumber,
 } from './common';
 
 export enum MorphoBlueVersions {
@@ -277,4 +277,54 @@ export interface MorphoBlueRealloactionMarketData {
   reallocatableLiquidityAssets: string,
   publicAllocatorSharedLiquidity: MorphoBluePublicAllocatorItem[],
   state: MorphoBlueAllocatorMarketState,
+}
+
+/**
+ * One asset leg of a historical Morpho Blue point. `supplied` and `borrowed` are raw base units of
+ * the token itself, read with the decimals the token reports on chain, so an asset missing from
+ * `@defisaver/tokens` still converts. `symbol` is best-effort and never used for math.
+ */
+export interface MorphoBlueHistoricalBalanceAsset {
+  symbol: string,
+  address: EthAddress,
+  supplied: string,
+  suppliedUsd: string,
+  borrowed: string,
+  borrowedUsd: string,
+  isCollateral: boolean,
+}
+
+/**
+ * Per-market data needed to price a historical Morpho Blue position. Morpho writes `idToMarketParams`
+ * once, in `createMarket`, and never again, so the whole parameter set — tokens, oracle, IRM, LLTV —
+ * plus the token decimals behind it are safe to read once at head and reuse for every point.
+ */
+export interface MorphoBlueHistoricalBalanceContext {
+  marketId: string,
+  /** The Morpho Blue singleton, read from the View rather than hardcoded per network. */
+  morpho: EthAddress,
+  loanToken: EthAddress,
+  collateralToken: EthAddress,
+  oracle: EthAddress,
+  /** `ZERO_ADDRESS` for a market that accrues no interest. */
+  irm: EthAddress,
+  lltv: string,
+  /** Token decimals as reported on chain, independent of `@defisaver/tokens`. */
+  loanTokenDecimals: number,
+  collateralTokenDecimals: number,
+  loanTokenSymbol: string,
+  collateralTokenSymbol: string,
+  /** Chainlink registry base address for the loan token's USD feed; empty for a USD-pegged token priced at $1. */
+  loanTokenFeedBase: string,
+}
+
+export interface MorphoBlueHistoricalBalance extends HistoricalBalance {
+  marketId: string,
+  /** Only the collateral token; excludes a loan-token deposit, which Morpho does not lend against. */
+  suppliedCollateralUsd: string,
+  /** USD price of the loan token at the block; the scalar that converts the whole point. `0` when the position is empty. */
+  loanTokenUsdPrice: string,
+  /** The market oracle's collateral quote carried into USD. `0` when the user holds no collateral, which needs no oracle read. */
+  collateralTokenUsdPrice: string,
+  assets: MorphoBlueHistoricalBalanceAsset[],
 }
